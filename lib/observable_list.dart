@@ -7,14 +7,13 @@ class ObservableList<T> extends ListBase implements ObservableCollection, Collec
   StreamController<ListAdditionEvent<T>> _additions;
   StreamController<ListDeletionEvent<T>> _deletions;
   StreamController<ListMutationEvent<T>> _mutations;
-
-  Signal<int> size;
+  SignalController<int> _size;
 
   List<T> items;
 
   ObservableList() {
     this.items = [];
-    this.size = new Signal(0);
+    this._size = new SignalController(0);
     this._additions = new StreamController.broadcast();
     this._mutations = new StreamController.broadcast();
     this._deletions = new StreamController.broadcast();
@@ -23,13 +22,15 @@ class ObservableList<T> extends ListBase implements ObservableCollection, Collec
   Stream<ListAdditionEvent<T>> get additions => _additions.stream;
   Stream<ListDeletionEvent<T>> get deletions => _deletions.stream;
   Stream<ListMutationEvent<T>> get mutations => _mutations.stream;
+  Signal<int> get size => _size.signal;
 
+  // TODO: these should be in ObservableCollection. was having strange inheritance issue
   void _incrSize() {
-    size.update(size.value + 1);
+    _size.update(size.value + 1);
   }
 
   void _decrSize() {
-    size.update(size.value - 1);
+    _size.update(size.value - 1);
   }
 
   @override

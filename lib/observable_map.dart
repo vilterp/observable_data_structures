@@ -4,24 +4,27 @@ class ObservableMap<K,V> implements Map, ObservableCollection {
 
   StreamController<MapPutEvent<K,V>> _puts;
   StreamController<MapRemovalEvent<K,V>> _removals;
+  SignalController<int> _size;
 
   Map<K,V> items;
-
-  Signal<int> size;
 
   ObservableMap() {
     items = <K,V>{};
     _puts = new StreamController.broadcast();
     _removals = new StreamController.broadcast();
-    size = new Signal(0);
+    _size = new SignalController(0);
   }
 
+  Stream<MapPutEvent<K,V>> get puts => _puts.stream;
+  Stream<MapRemovalEvent<K,V>> get removals => _removals.stream;
+  Signal<int> get size => _size.signal;
+
   void _incrSize() {
-    size.update(size.value + 1);
+    _size.update(size.value + 1);
   }
 
   void _decrSize() {
-    size.update(size.value - 1);
+    _size.update(size.value - 1);
   }
 
   Iterable<K> get keys => items.keys;
@@ -87,7 +90,11 @@ class ObservableMap<K,V> implements Map, ObservableCollection {
     throw new UnimplementedError("TODO");
   }
 
-  // TODO: observable sets of entries, keys, values
+  void bindToMap(Map<K,V> otherMap) {
+    assert(otherMap.length == 0);
+    puts.listen((evt) => otherMap[evt.key] = evt.value);
+    removals.listen((evt) => otherMap.remove(evt.key));
+  }
 
 }
 
