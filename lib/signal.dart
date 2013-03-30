@@ -32,7 +32,9 @@ class Signal<T> {
       });
     });
     var initialVal = recompute();
-    return new Signal(initialVal, controller.stream);
+    // initialize
+    this.value = recompute();
+    this.updates = controller.stream;
   }
 
   Signal<dynamic> map(dynamic mapper(T val)) => new Signal(mapper(value), updates.map(mapper));
