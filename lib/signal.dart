@@ -39,4 +39,9 @@ class Signal<T> {
 
   Signal<dynamic> map(dynamic mapper(T val)) => new Signal(mapper(value), updates.map(mapper));
 
+  void bindToProperty(Object object, String property) {
+    var mirror = reflect(object);
+    updates.listen((newVal) => mirror.setField(property, newVal));
+  }
+
 }
