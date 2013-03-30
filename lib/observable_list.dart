@@ -54,8 +54,8 @@ class ObservableList<T> implements ObservableCollection, Collection {
 
   @override
   void add(T item) {
-    items.add(item);
     _additions.add(new ListAdditionEvent(items.length, item));
+    items.add(item);
     _incrSize();
   }
 
@@ -205,10 +205,12 @@ class ObservableList<T> implements ObservableCollection, Collection {
 
   @override
   ObservableList<T> mapped(dynamic mapper(T item)) {
-    // TODO: ImmutableObservableList or something
-//    return new ObservableList.fromStreams(additions.map((evt) => new ListAdditionEvent(evt.index, mapper(evt.item))),
-//                                          mutations.map((evt) => new ListMutationEvent(evt.index, mapped((evt.newValue)))),
-//                                          deletions);
+    // TODO: ImmutableObservableList or something. create from mapped streams.
+    var list = new ObservableList<T>();
+    additions.listen((evt) => list.insert(evt.index, mapper(evt.item)));
+    removals.listen((evt) => list.removeAt(evt.index));
+    mutations.listen((evt) => list[evt.index] = mapper(evt.newValue));
+    return list;
   }
 
   void bindToList(List<T> list) {

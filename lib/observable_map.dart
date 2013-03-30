@@ -9,7 +9,7 @@ class ObservableMap<K,V> implements Map, ObservableCollection {
   Map<K,V> items;
 
   ObservableMap() {
-    items = <K,V>{};
+    items = new Map<K,V>();
     _puts = new StreamController.broadcast();
     _removals = new StreamController.broadcast();
     _size = new SignalController(0);

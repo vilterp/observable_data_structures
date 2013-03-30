@@ -36,6 +36,11 @@ class Signal<T> {
     });
   }
 
+  Signal.constant(T initialValue) {
+    this.value = initialValue;
+    this.updates = new StreamController.broadcast().stream;
+  }
+
   T _getValue() => value;
 
   Signal.derived(Iterable<Signal<T>> signals, Function computation) {
