@@ -12,6 +12,7 @@ class SignalController<T> {
 
   void update(T newValue) {
     _updates.add(newValue);
+    signal.value = newValue;
   }
 
 }
@@ -22,6 +23,20 @@ class Signal<T> {
   Stream<T> updates;
 
   Signal(this.value, this.updates);
+
+  Signal.fold(T initialValue, Stream<dynamic> stream, T combiner(T val, dynamic evt)) {
+    this.value = initialValue;
+    // TODO: hmm, wonky to do this in a map
+    this.updates = stream.map((evt) {
+      print(evt);
+      var newVal = combiner(value, evt);
+      print("newVal: ".concat(newVal.toString()));
+      value = newVal;
+      return newVal;
+    });
+  }
+
+  T _getValue() => value;
 
   Signal.derived(Iterable<Signal<T>> signals, Function computation) {
     var controller = new StreamController.broadcast();

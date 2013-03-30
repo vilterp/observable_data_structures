@@ -2,7 +2,8 @@ part of observable_datastructures;
 
 // TODO: streams#multiplex
 
-class ObservableList<T> extends ListBase implements ObservableCollection, Collection {
+// TODO: major refactor(?)
+class ObservableList<T> implements ObservableCollection, Collection {
 
   StreamController<ListAdditionEvent<T>> _additions;
   StreamController<ListRemovalEvent<T>> _removals;
