@@ -5,7 +5,7 @@ part of observable_datastructures;
 class ObservableList<T> extends ListBase implements ObservableCollection, Collection {
 
   StreamController<ListAdditionEvent<T>> _additions;
-  StreamController<ListDeletionEvent<T>> _deletions;
+  StreamController<ListRemovalEvent<T>> _removals;
   StreamController<ListMutationEvent<T>> _mutations;
   SignalController<int> _size;
 
@@ -16,11 +16,11 @@ class ObservableList<T> extends ListBase implements ObservableCollection, Collec
     this._size = new SignalController(0);
     this._additions = new StreamController.broadcast();
     this._mutations = new StreamController.broadcast();
-    this._deletions = new StreamController.broadcast();
+    this._removals = new StreamController.broadcast();
   }
 
   Stream<ListAdditionEvent<T>> get additions => _additions.stream;
-  Stream<ListDeletionEvent<T>> get deletions => _deletions.stream;
+  Stream<ListRemovalEvent<T>> get removals => _removals.stream;
   Stream<ListMutationEvent<T>> get mutations => _mutations.stream;
   Signal<int> get size => _size.signal;
 
@@ -89,7 +89,7 @@ class ObservableList<T> extends ListBase implements ObservableCollection, Collec
   @override
   T removeAt(int index) {
     T item = items.removeAt(index);
-    _deletions.add(new ListDeletionEvent(index));
+    _removals.add(new ListRemovalEvent(index));
     _decrSize();
     return item;
   }
@@ -98,7 +98,7 @@ class ObservableList<T> extends ListBase implements ObservableCollection, Collec
   T removeLast() {
     T item = items.removeLast(); // TODO: wat happens when length is 0? hopefully this throws exception
     var ind = items.length - 1;
-    _deletions.add(new ListDeletionEvent(ind));
+    _removals.add(new ListRemovalEvent(ind));
     _decrSize();
     return item;
   }
@@ -203,10 +203,16 @@ class ObservableList<T> extends ListBase implements ObservableCollection, Collec
 //                                          deletions);
   }
 
+  void bindToList(List<T> list) {
+    assert(list.isEmpty);
+    additions.listen((evt) => list.insert(evt.index, evt.item));
+    removals.listen((evt) => list.removeAt(evt.index));
+    mutations.listen((evt) => list[evt.index] = evt.newValue);
+  }
+
 }
 
 // TODO: ObservableSet
-// TODO: ObservableTree
 
 // list events
 abstract class ListEvent<T> extends CollectionEvent {}
@@ -220,11 +226,11 @@ class ListAdditionEvent<T> extends ListEvent {
 
 }
 
-class ListDeletionEvent<T> extends ListEvent {
+class ListRemovalEvent<T> extends ListEvent {
 
   int index;
 
-  ListDeletionEvent(this.index);
+  ListRemovalEvent(this.index);
 
 }
 
