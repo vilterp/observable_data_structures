@@ -28,9 +28,7 @@ class Signal<T> {
     this.value = initialValue;
     // TODO: hmm, wonky to do this in a map
     this.updates = stream.map((evt) {
-      print(evt);
       var newVal = combiner(value, evt);
-      print("newVal: ".concat(newVal.toString()));
       value = newVal;
       return newVal;
     });
