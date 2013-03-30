@@ -19,6 +19,13 @@ class ObservableList<T> extends ListBase implements ObservableCollection, Collec
     this._removals = new StreamController.broadcast();
   }
 
+  static ObservableList<T> log(Stream<T> stream) {
+    // TODO: really, want to do this with a constructor. should really separate controller & list.
+    var list = new ObservableList<T>();
+    stream.listen((evt) => list.add(evt), unsubscribeOnError: true);
+    return list;
+  }
+
   Stream<ListAdditionEvent<T>> get additions => _additions.stream;
   Stream<ListRemovalEvent<T>> get removals => _removals.stream;
   Stream<ListMutationEvent<T>> get mutations => _mutations.stream;
