@@ -3,6 +3,7 @@ library observable_datastructures;
 import 'dart:async';
 import 'package:meta/meta.dart';
 import 'dart:mirrors';
+import 'dart:collection';
 
 part 'signal.dart';
 part 'streams.dart';

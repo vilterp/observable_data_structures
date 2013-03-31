@@ -1,100 +1,77 @@
 part of observable_datastructures;
 
-class ObservableMap<K,V> implements Map, ObservableCollection {
+class ObservableMapController<K,V> {
 
-  StreamController<MapPutEvent<K,V>> _puts;
-  StreamController<MapRemovalEvent<K,V>> _removals;
-  SignalController<int> _size;
+  ObservableMap<K,V> _map;
+  StreamController<MapEvent<K,V>> _updates;
 
-  Map<K,V> items;
+  ObservableMap<K,V> get map => _map;
 
-  ObservableMap() {
-    items = new Map<K,V>();
-    _puts = new StreamController.broadcast();
-    _removals = new StreamController.broadcast();
-    _size = new SignalController(0);
+  ObservableMapController() {
+    _updates = new StreamController.broadcast();
+    _map = new ObservableMap.fromStream(_updates.stream);
   }
-
-  Stream<MapPutEvent<K,V>> get puts => _puts.stream;
-  Stream<MapRemovalEvent<K,V>> get removals => _removals.stream;
-  Signal<int> get size => _size.signal;
-
-  void _incrSize() {
-    _size.update(size.value + 1);
-  }
-
-  void _decrSize() {
-    _size.update(size.value - 1);
-  }
-
-  Iterable<K> get keys => items.keys;
-  Iterable<V> get values => items.values;
-
-  int get length => items.length;
-  bool get isEmpty => items.isEmpty;
-  bool containsValue(V val) => items.containsValue(val);
-  bool containsKey(K key) => items.containsKey(key);
-  V operator [](K key) => items[key];
 
   void operator []=(K key, V value) {
-    if(!containsKey(key)) {
-      _incrSize();
+    _updates.add(new MapPutEvent(key, value));
+  }
+
+  Option<V> remove(K key) {
+    if(map.currentItems.containsKey(key)) {
+      V val = map.currentItems[key];
+      _updates.add(new MapRemovalEvent(key));
+      return new Some(val);
     }
-    items[key] = value;
-    _puts.add(new MapPutEvent(key, value));
+    return const None();
+  }
+
+}
+
+// TODO: support initial items like List
+class ObservableMap<K,V> implements ObservableCollection {
+
+  Signal<int> _size;
+  Map<K,V> _items;
+  Stream<MapEvent<K,V>> updates; // TODO: should I make everything private and make getters for everything? grr
+
+  ObservableMap.fromStream(this.updates) {
+    _items = new Map<K,V>();
+    bindToMap(_items);
+    Stream<int> sizeUpdates = updates.map((update) {
+      if(update is MapRemovalEvent) {
+        return -1;
+      } else if(update is MapPutEvent) {
+        return _items.containsKey((update as MapPutEvent<K,V>).key) ? 0 : 1;
+      }
+    });
+    _size = new Signal(0, sizeUpdates);
   }
 
   @override
-  V putIfAbsent(K key, V ifAbsent()) {
-    if(containsKey(key)) {
-      return this[key];
-    } else {
-      V newVal = ifAbsent();
-      items[key] = newVal;
-      _puts.add(new MapPutEvent(key, newVal));
-      _incrSize();
-      return newVal;
+  Signal<int> get size => _size;
+
+  Map<K,V> get currentItems => _items; // TODO: why isn't there an UnmodifiableMapView class?
+
+  ObservableSet<Tuple<K,V>> _entries;
+  ObservableSet<Tuple<K,V>> get entries {
+    if(_entries == null) {
+      // TODO: initialize...
     }
+    return _entries;
   }
 
-  @override
-  V remove(K key) {
-    if(containsKey(key)) {
-      _removals.add(new MapRemovalEvent(key));
-      _decrSize();
-    }
-    return items.remove(key);
+  void bindToMap(Map<K,V> map) {
+    updates.listen((evt) {
+      if(evt is MapPutEvent) {
+        var put = evt as MapPutEvent;
+        map[put.key] = put.value;
+      } else {
+        map.remove((evt as MapRemovalEvent).key)
+      }
+    });
   }
 
-  @override
-  void clear() {
-    keys.forEach(remove);
-  }
-
-  @override
-  void forEach(void action(K key, V value)) {
-    for(K the_key in keys) {
-      action(the_key, this[the_key]);
-    }
-  }
-
-  @override
-  ObservableMap<dynamic,dynamic> mapped(Tuple<dynamic,dynamic> mapper(Tuple<K,V> entry)) {
-    // TODO: does this make sense?
-    throw new UnimplementedError("TODO");
-  }
-
-  @override
-  ObservableMap<dynamic,dynamic> filtered(bool pred(Tuple<K,V> entry)) {
-    // TODO: does this make sense?
-    throw new UnimplementedError("TODO");
-  }
-
-  void bindToMap(Map<K,V> otherMap) {
-    assert(otherMap.length == 0);
-    puts.listen((evt) => otherMap[evt.key] = evt.value);
-    removals.listen((evt) => otherMap.remove(evt.key));
-  }
+  // TODO: contains[...] => Signal<bool>
 
 }
 

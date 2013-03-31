@@ -17,6 +17,16 @@ class SignalController<T> {
 
 }
 
+class IntSignalController extends SignalController<int> {
+
+  IntSignalController(int val) : super(val);
+
+  void changeBy(int delta) {
+    update(signal.value + delta);
+  }
+
+}
+
 class Signal<T> {
 
   T value;
@@ -38,8 +48,6 @@ class Signal<T> {
     this.value = initialValue;
     this.updates = new StreamController.broadcast().stream;
   }
-
-  T _getValue() => value;
 
   Signal.derived(Iterable<Signal<T>> signals, Function computation) {
     var controller = new StreamController.broadcast();

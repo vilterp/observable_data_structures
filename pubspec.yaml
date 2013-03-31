@@ -1,3 +1,4 @@
 name: observable_datastructures
 dependencies:
   meta: any
+  option: any
