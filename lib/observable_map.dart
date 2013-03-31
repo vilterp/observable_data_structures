@@ -34,6 +34,8 @@ class ObservableMap<K,V> implements ObservableCollection {
   Map<K,V> _items;
   Stream<MapEvent<K,V>> updates; // TODO: should I make everything private and make getters for everything? grr
 
+  static ObservableMap<dynamic,dynamic> EMPTY = new ObservableMap.fromStream(new StreamController.broadcast().stream);
+
   ObservableMap.fromStream(this.updates) {
     _items = new Map<K,V>();
     bindToMap(_items);
@@ -66,12 +68,14 @@ class ObservableMap<K,V> implements ObservableCollection {
         var put = evt as MapPutEvent;
         map[put.key] = put.value;
       } else {
-        map.remove((evt as MapRemovalEvent).key)
+        map.remove((evt as MapRemovalEvent).key);
       }
     });
   }
 
   // TODO: contains[...] => Signal<bool>
+
+  // TODO: operator [] => Signal<Option<T>>
 
 }
 

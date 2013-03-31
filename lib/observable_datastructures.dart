@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'dart:mirrors';
 import 'dart:collection';
+import 'package:option/option.dart';
 
 part 'signal.dart';
 part 'streams.dart';
