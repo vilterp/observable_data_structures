@@ -9,7 +9,7 @@ class ObservableMapController<K,V> {
 
   ObservableMapController() {
     _updates = new StreamController.broadcast();
-    _map = new ObservableMap.fromStream(_updates.stream);
+    _map = new ObservableMap(_updates.stream);
   }
 
   factory ObservableMapController.pipe(Stream<MapEvent<K,V>> updates) {
@@ -62,6 +62,10 @@ class ObservableMap<K,V> implements ObservableCollection {
     var controller = new ObservableMapController.pipe(updates);
     initialItems.forEach((k,v) => controller[k] = v);
     return controller.map;
+  }
+
+  factory ObservableMap.constant(Map<K,V> items) {
+    return new ObservableMap.fromStream(new StreamController.broadcast().stream, items);
   }
 
   @override

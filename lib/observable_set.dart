@@ -9,7 +9,7 @@ class ObservableSetController<T> {
 
   ObservableSetController() {
     _updates = new StreamController.broadcast();
-    _set = new ObservableSet.fromStream(_updates.stream);
+    _set = new ObservableSet(_updates.stream);
   }
 
   factory ObservableSetController.pipe(Stream<SetEvent> updates) {
