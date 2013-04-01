@@ -12,4 +12,5 @@ part 'observable_collection.dart';
 part 'observable_list.dart';
 part 'observable_map.dart';
 part 'observable_tree.dart';
+part 'observable_set.dart';
 part 'tuple.dart';

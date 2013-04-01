@@ -57,16 +57,15 @@ class ObservableList<T> extends ObservableSingleElementCollection {
   ObservableList(this.updates) {
     _items = <T>[];
     bindToList(_items);
-    Stream<int> sizeUpdates = updates.map((evt) {
-      if(evt is ListAdditionEvent) {
-        return (evt as ListAdditionEvent).index == _size.value ? 1 : 0;
+    _size = new Signal.fold(0, updates, (curSize, evt) {
+      if(evt is ListAdditionEvent && (evt as ListAdditionEvent).index == curSize) {
+        return curSize + 1;
       } else if(evt is ListRemovalEvent) {
-        return -1;
+        return curSize - 1;
       } else {
-        return 0;
+        return curSize;
       }
     });
-    _size = new Signal(0, sizeUpdates);
   }
 
   factory ObservableList.fromStream(Stream<ListEvent<T>> updates, [Iterable<T> initialItems]) {

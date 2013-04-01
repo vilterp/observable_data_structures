@@ -12,6 +12,16 @@ class ObservableMapController<K,V> {
     _map = new ObservableMap.fromStream(_updates.stream);
   }
 
+  factory ObservableMapController.pipe(Stream<MapEvent<K,V>> updates) {
+    var controller = new ObservableMapController();
+    updates.listen((evt) => controller._update(evt));
+    return controller;
+  }
+
+  void _update(MapEvent<K,V> evt) {
+    _updates.add(evt);
+  }
+
   void operator []=(K key, V value) {
     _updates.add(new MapPutEvent(key, value));
   }
@@ -27,7 +37,6 @@ class ObservableMapController<K,V> {
 
 }
 
-// TODO: support initial items like List
 class ObservableMap<K,V> implements ObservableCollection {
 
   Signal<int> _size;
@@ -36,7 +45,7 @@ class ObservableMap<K,V> implements ObservableCollection {
 
   static ObservableMap<dynamic,dynamic> EMPTY = new ObservableMap.fromStream(new StreamController.broadcast().stream);
 
-  ObservableMap.fromStream(this.updates) {
+  ObservableMap(this.updates) {
     _items = new Map<K,V>();
     bindToMap(_items);
     Stream<int> sizeUpdates = updates.map((update) {
@@ -47,6 +56,12 @@ class ObservableMap<K,V> implements ObservableCollection {
       }
     });
     _size = new Signal(0, sizeUpdates);
+  }
+
+  factory ObservableMap.fromStream(Stream<MapEvent<K,V>> updates, [Map<K,V> initialItems]) {
+    var controller = new ObservableMapController.pipe(updates);
+    initialItems.forEach((k,v) => controller[k] = v);
+    return controller.map;
   }
 
   @override
@@ -63,6 +78,7 @@ class ObservableMap<K,V> implements ObservableCollection {
   }
 
   void bindToMap(Map<K,V> map) {
+    map.forEach((k, v) => _items[k] = v);
     updates.listen((evt) {
       if(evt is MapPutEvent) {
         var put = evt as MapPutEvent;
