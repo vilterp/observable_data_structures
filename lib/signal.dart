@@ -34,14 +34,13 @@ class Signal<T> {
 
   Signal(this.value, this.updates);
 
-  Signal.fold(T initialValue, Stream<dynamic> stream, T combiner(T val, dynamic evt)) {
-    this.value = initialValue;
-    // TODO: hmm, wonky to do this in a map
-    this.updates = stream.map((evt) {
-      var newVal = combiner(value, evt);
-      value = newVal;
-      return newVal;
+  factory Signal.fold(T initialValue, Stream<dynamic> stream, T combiner(T val, dynamic evt)) {
+    var controller = new SignalController(initialValue);
+    stream.listen((evt) {
+      var oldValue = controller.signal.value;
+      controller.update(combiner(oldValue, evt));
     });
+    return controller.signal;
   }
 
   Signal.constant(T initialValue) {
