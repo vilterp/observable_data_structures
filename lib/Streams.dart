@@ -6,7 +6,7 @@ part of observable_datastructures;
 class Streams {
 
   Stream<dynamic> merge(List<Stream<dynamic>> streams) {
-    var controller = new StreamController.broadcast();
+    var controller = new StreamController();
     int stillGoing = streams.length;
     streams.forEach((stream) {
       stream.listen(controller.add, onError: controller.addError, onDone: () {
@@ -20,7 +20,7 @@ class Streams {
   }
 
   Stream<MultiplexedStreamEvent> multiplex(Map<String,Stream> streams) {
-    var controller = new StreamController.broadcast();
+    var controller = new StreamController();
     streams.forEach((name, stream) {
       stream.listen((evt) => controller.add(new MultiplexedDataEvent(name, evt)),
                     onError: (err) => controller.add(new MultiplexedErrorEvent(name, err)),
@@ -31,7 +31,7 @@ class Streams {
 
   Map<String,Stream> demultiplex(Stream<MultiplexedStreamEvent> multiplexed, List<String> streamNames) {
     var controllers = <String,StreamController>{};
-    streamNames.forEach((name) => controllers[name] = new StreamController.broadcast());
+    streamNames.forEach((name) => controllers[name] = new StreamController());
     multiplexed.listen((evt) {
       var controller = controllers[evt.streamName];
       // wish there was pattern matching :P

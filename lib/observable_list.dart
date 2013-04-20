@@ -6,8 +6,8 @@ class ObservableListController<T> {
   StreamController<ListEvent<T>> _updates;
 
   ObservableListController() {
-    _updates = new StreamController<ListEvent<T>>.broadcast();
-    _list = new ObservableList(_updates.stream);
+    _updates = new StreamController();
+    _list = new ObservableList(_updates.stream.asBroadcastStream());
   }
 
   ObservableList<T> get list => _list;
@@ -79,10 +79,10 @@ class ObservableList<T> extends ObservableSingleElementCollection {
   }
 
   factory ObservableList.constant(Iterable<T> items) {
-    return new ObservableList.fromStream(new StreamController.broadcast().stream, items);
+    return new ObservableList.fromStream(new StreamController().stream.asBroadcastStream(), items);
   }
 
-  static ObservableList<dynamic> EMPTY = new ObservableList(new StreamController().stream);
+  static ObservableList<dynamic> EMPTY = new ObservableList(new StreamController().stream.asBroadcastStream());
 
   factory ObservableList.logEvents(Stream<T> events) {
     // would be nice to do this just by piping :P
@@ -91,11 +91,18 @@ class ObservableList<T> extends ObservableSingleElementCollection {
     return controller._list;
   }
 
-  List<T> get currentItems => new UnmodifiableListView(_items);
+  UnmodifiableListView<T> listView = null;
+  List<T> get currentItems {
+    if(listView == null) {
+      listView = new UnmodifiableListView(_items);
+    }
+    return listView;
+  }
+
   Signal<int> get size => _size;
 
   @override
-  ObservableList<T> mapped(dynamic mapper(T item)) {
+  ObservableList<dynamic> mapped(dynamic mapper(T item)) {
     var mappedUpdates = updates.map((update) {
       if(update is ListEventWithItem) {
         var upd = update as ListEventWithItem<T>;

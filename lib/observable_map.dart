@@ -8,8 +8,8 @@ class ObservableMapController<K,V> {
   ObservableMap<K,V> get map => _map;
 
   ObservableMapController() {
-    _updates = new StreamController.broadcast();
-    _map = new ObservableMap(_updates.stream);
+    _updates = new StreamController();
+    _map = new ObservableMap(_updates.stream.asBroadcastStream());
   }
 
   factory ObservableMapController.pipe(Stream<MapEvent<K,V>> updates) {
@@ -43,7 +43,7 @@ class ObservableMap<K,V> implements ObservableCollection {
   Map<K,V> _items;
   Stream<MapEvent<K,V>> updates; // TODO: should I make everything private and make getters for everything? grr
 
-  static ObservableMap<dynamic,dynamic> EMPTY = new ObservableMap.fromStream(new StreamController.broadcast().stream);
+  static ObservableMap<dynamic,dynamic> EMPTY = new ObservableMap.fromStream(new StreamController().stream.asBroadcastStream());
 
   ObservableMap(this.updates) {
     _items = new Map<K,V>();
@@ -65,7 +65,7 @@ class ObservableMap<K,V> implements ObservableCollection {
   }
 
   factory ObservableMap.constant(Map<K,V> items) {
-    return new ObservableMap.fromStream(new StreamController.broadcast().stream, items);
+    return new ObservableMap.fromStream(new StreamController().stream.asBroadcastStream(), items);
   }
 
   @override

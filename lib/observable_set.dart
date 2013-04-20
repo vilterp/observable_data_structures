@@ -8,8 +8,8 @@ class ObservableSetController<T> {
   ObservableSet<T> get set => _set;
 
   ObservableSetController() {
-    _updates = new StreamController.broadcast();
-    _set = new ObservableSet(_updates.stream);
+    _updates = new StreamController();
+    _set = new ObservableSet(_updates.stream.asBroadcastStream());
   }
 
   factory ObservableSetController.pipe(Stream<SetEvent> updates) {
@@ -45,7 +45,8 @@ class ObservableSet<T> extends ObservableSingleElementCollection<T> {
   Set<T> get currentItems => _items;
   Signal<int> get size => _size;
 
-  static ObservableSet<T> EMPTY = new ObservableSet(new StreamController.broadcast().stream);
+  // TODO: entirely too many allocations here.
+  static ObservableSet<T> EMPTY = new ObservableSet(new StreamController().stream.asBroadcastStream());
 
   ObservableSet(this.updates) {
     _items = new Set<T>();

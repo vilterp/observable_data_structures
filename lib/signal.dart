@@ -6,7 +6,7 @@ class SignalController<T> {
   Signal<T> signal;
 
   SignalController(T initialValue) {
-    _updates = new StreamController.broadcast();
+    _updates = new StreamController();
     signal = new Signal(initialValue, _updates.stream);
   }
 
@@ -46,11 +46,11 @@ class Signal<T> {
 
   Signal.constant(T initialValue) {
     this.value = initialValue;
-    this.updates = new StreamController.broadcast().stream;
+    this.updates = new StreamController().stream;
   }
 
   Signal.derived(Iterable<Signal<T>> signals, Function computation) {
-    var controller = new StreamController.broadcast();
+    var controller = new StreamController();
     var recompute = () => Function.apply(computation, signals.map((s) => s.value));
     signals.forEach((signal) {
       signal.updates.listen((_) {
